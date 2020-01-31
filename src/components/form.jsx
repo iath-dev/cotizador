@@ -1,12 +1,61 @@
 import React from 'react';
-import { Field, Label, Select, InputRadio, Button } from '../styled';
+import { Field, Label, Select, InputRadio, Button, ErrorContainer } from '../styled';
+import { defaultForm } from '../data';
+import { getYearDifference, getBrandDiscount, getPlan } from '../utils';
 
-const Form = () => {
+const Form = ({ setSummary, setLoad }) => {
+    const [data, setData] = React.useState(defaultForm);
+    const [error, setError] = React.useState(false);
+
+    const { brand, year, plan } = data;
+
+    const handleChanges = (event) => {
+        const { name, value } = event.target;
+        setData({...data, [name]: value});
+    }
+
+    const handleSubmit = (event) => {
+        event.preventDefault();
+        if (brand.trim() === '' || year.trim() === '') {
+            setError(true);
+            return;
+        }
+        setError(false);
+
+        let result = 2000;
+
+        // Obtener la diferencia de años
+        const minus = getYearDifference(year);
+        result -= (((minus*3) * result) / 100);
+        result = getBrandDiscount(brand) * result;
+        result = getPlan(plan) * result;
+
+        setLoad(true);
+
+        setTimeout(() => {
+            setLoad(false);
+            setSummary({
+                result: parseFloat(result).toFixed(2),
+                data,
+            })
+        }, 3000);
+        setData(defaultForm);
+
+
+    }
+
     return (
-        <form>
+        <form
+            onSubmit={handleSubmit}
+        >
+            { error ? <ErrorContainer>Todos los campos son obligatorios</ErrorContainer> : null }
             <Field>
                 <Label>Marca</Label>
-                <Select>
+                <Select
+                    name="brand"
+                    value={brand}
+                    onChange={handleChanges}
+                >
                     <option value="">---Seleccione---</option>
                     <option value="americano">Americano</option>
                     <option value="europeo">Europeo</option>
@@ -15,7 +64,11 @@ const Form = () => {
             </Field>
             <Field>
                 <Label>Año</Label>
-                <Select>
+                <Select
+                    name="year"
+                    value={year}
+                    onChange={handleChanges}
+                >
                     <option value="">-- Seleccione --</option>
                     <option value="2021">2021</option>
                     <option value="2020">2020</option>
@@ -35,14 +88,18 @@ const Form = () => {
                     type="radio"
                     name="plan"
                     value="básico"
+                    checked={plan === 'básico'}
+                    onChange={handleChanges}
                 /> Básico
                 <InputRadio
                     type="radio"
                     name="plan"
                     value="completo"
+                    checked={plan === 'completo'}
+                    onChange={handleChanges}
                 /> Completo
             </Field>
-            <Button type="button">Cotizar</Button>
+            <Button type="submit">Cotizar</Button>
         </form>
     )
 }

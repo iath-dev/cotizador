@@ -1,24 +1,25 @@
 import React from 'react';
 import Header from './components/header';
-import styled from '@emotion/styled';
 import Form from './components/form';
-
-const Container = styled.div`
-  max-width: 600px;
-  margin: 0 auto;
-`;
-
-const FormContainer = styled.div`
-  background-color: #fff;
-  padding: 3rem;
-`;
+import Summary from './components/summary';
+import { Container, FormContainer } from './styled';
+import Result from './components/result';
+import Spinner from './components/spinner';
 
 function App() {
+  const [summary, setSummary] = React.useState({});
+  const [load, setLoad] = React.useState(false);
+
+  const { data, result } = summary;
+
   return (
     <Container>
       <Header title="Cotizador" />
       <FormContainer>
-        <Form />
+        <Form setSummary={setSummary} setLoad={setLoad} />
+        { load ? <Spinner /> : null }
+        <Summary data={data} />
+        <Result result={result} />
       </FormContainer>
     </Container>
     );
